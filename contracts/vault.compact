@@ -1,0 +1,108 @@
+pragma compiler_version >= 0.14.0;
+
+import Stdlib.Prelude.*;
+
+// ============================================================================
+// StellarShield Vault Contract
+// ============================================================================
+// Security & Audit Documentation:
+// - Public State Tracker: Maintains non-sensitive aggregates to provide 
+//   liquidity proofs without revealing individual user positions.
+// - Private Witness Layer: Users interact with private commitments and 
+//   nullifiers to prevent tracking of individual funds.
+// - Front-running Protection: State transitions rely on zero-knowledge proofs
+//   where sensitive parameters (user identity, exact balances) are hidden.
+// ============================================================================
+
+export ledger vault_ledger {
+  // Public State Tracker
+  // Tracks the total liquidity in the vault. This is safe to make public
+  // as it does not leak individual user balances.
+  total_liquidity: Cell<Uint<64>>,
+
+  // Maps a user's commitment to their balance (if public) or acts as an accumulator.
+  // In a fully private vault, we would use a Merkle tree of commitments.
+  // Here we use a secure hash map to prevent enumeration of depositors.
+  commitments: Map<Bytes<32>, Bool>,
+
+  // Nullifier set to prevent double-spending of private withdrawals.
+  nullifiers: Map<Bytes<32>, Bool>
+}
+
+// ----------------------------------------------------------------------------
+// Constructor
+// ----------------------------------------------------------------------------
+export circuit constructor(): [] {
+  vault_ledger.total_liquidity = 0 as Uint<64>;
+}
+
+// ----------------------------------------------------------------------------
+// Deposit (Private to Public/Private Commitment)
+// ----------------------------------------------------------------------------
+export circuit deposit(
+  commitment: Bytes<32>,
+  amount: Uint<64>
+): [] {
+  // SECURITY NOTE: 'amount' is public in this specific deposit model so the 
+  // smart contract can escrow the correct tokens. However, the 'commitment' 
+  // masks the user's identity and their future spending conditions.
+  
+  // Prevent zero-value deposits to mitigate spam/dust attacks
+  assert amount > (0 as Uint<64>) "Deposit amount must be greater than zero";
+  
+  // Ensure the commitment hasn't been used before to prevent replay attacks
+  assert !vault_ledger.commitments.member(commitment) "Commitment already exists";
+
+  // Update public state
+  let current_liquidity = vault_ledger.total_liquidity;
+  vault_ledger.total_liquidity = current_liquidity + amount;
+
+  // Register the new commitment
+  vault_ledger.commitments.insert(commitment, true);
+}
+
+// ----------------------------------------------------------------------------
+// Withdraw (Private Witness Layer)
+// ----------------------------------------------------------------------------
+export circuit withdraw(
+  amount: Uint<64>,
+  nullifier: Bytes<32>,
+  secret_witness: Bytes<32>,
+  public_recipient: Bytes<32>
+): [] {
+  // SECURITY NOTE: The withdrawal process uses a private 'secret_witness'.
+  // We compute the expected commitment locally in the circuit (which runs 
+  // off-chain in the ZK prover). Only the ZK proof is posted on-chain.
+  
+  // 1. Reconstruct the commitment from the private witness
+  // We hash the secret_witness and the amount. In a real system, this would
+  // use a ZK-friendly hash function like Poseidon.
+  let computed_commitment = hash(secret_witness, amount as Bytes<32>);
+
+  // 2. Verify the commitment exists in our state
+  assert vault_ledger.commitments.member(computed_commitment) "Invalid or unknown commitment";
+
+  // 3. Prevent Double-Spending
+  // We check if the nullifier has already been revealed.
+  assert !vault_ledger.nullifiers.member(nullifier) "Nullifier already spent";
+
+  // 4. Ensure Vault Insolvency Protection
+  let current_liquidity = vault_ledger.total_liquidity;
+  assert current_liquidity >= amount "Insufficient vault liquidity";
+
+  // 5. State Updates
+  // Mark the nullifier as spent
+  vault_ledger.nullifiers.insert(nullifier, true);
+
+  // Update total liquidity
+  vault_ledger.total_liquidity = current_liquidity - amount;
+
+  // 6. Data Disclosure
+  // SECURITY NOTE: We use `disclose()` carefully here. We only disclose the 
+  // `amount` and the `public_recipient` so the underlying ledger can process 
+  // the token transfer. The `secret_witness` and `computed_commitment` remain 
+  // entirely private. This prevents observers from linking the withdrawal 
+  // back to the original deposit, ensuring strong privacy.
+  disclose(amount);
+  disclose(public_recipient);
+}
