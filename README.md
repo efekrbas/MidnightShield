@@ -74,3 +74,13 @@ Create a `.env` file containing your `DEPLOYER_SEED_PHRASE`, then execute the pr
 ```bash
 npx ts-node scripts/deploy.ts
 ```
+
+## 📸 Technical Evaluation Proofs
+
+To fulfill the submission requirements, the following proofs of successful compilation and deployment are provided:
+
+### 1. Compile Output (Circuits Listed)
+![Compile Output](images/compile_success.png)
+
+### 2. Contract Deployed (Address Shown)
+![Deploy Output](images/deploy_output.png)
