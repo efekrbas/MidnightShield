@@ -3,7 +3,7 @@ pragma compiler_version >= 0.14.0;
 import Stdlib.Prelude.*;
 
 // ============================================================================
-// StellarShield Vault Contract
+// MidnightShield Vault Contract
 // ============================================================================
 // Security & Audit Documentation:
 // - Public State Tracker: Maintains non-sensitive aggregates to provide 

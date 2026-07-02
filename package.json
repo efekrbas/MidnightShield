@@ -1,7 +1,7 @@
 {
-  "name": "stellar-shield",
+  "name": "midnight-shield",
   "version": "1.0.0",
-  "description": "Stellar-Shield: Midnight Network interoperability with payment ecosystems",
+  "description": "Midnight-Shield: Midnight Network privacy-preserving liquidity vault",
   "main": "dist/index.js",
   "engines": {
     "node": ">=22.0.0"
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@midnight-ntwrk/midnight-js": "^1.0.0",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   midnight-proof-server:
     image: midnightnetwork/proof-server:latest
-    container_name: stellar-shield-proof-server
+    container_name: midnight-shield-proof-server
     ports:
       - "6300:6300"
     environment:
@@ -11,23 +11,23 @@ services:
     volumes:
       - proof-data:/var/lib/midnight/proof-data
     networks:
-      - stellar-shield-network
+      - midnight-shield-network
     restart: unless-stopped
 
   midnight-sandbox:
     image: midnightnetwork/sandbox:latest
-    container_name: stellar-shield-sandbox
+    container_name: midnight-shield-sandbox
     ports:
       - "9944:9944"
       - "9933:9933"
     environment:
       - LOG_LEVEL=debug
     networks:
-      - stellar-shield-network
+      - midnight-shield-network
     restart: unless-stopped
 
 networks:
-  stellar-shield-network:
+  midnight-shield-network:
     driver: bridge
 
 volumes:

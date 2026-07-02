@@ -41,7 +41,7 @@ class MockVaultContract {
     }
 }
 
-describe('StellarShield Vault ZK Contract', () => {
+describe('MidnightShield Vault ZK Contract', () => {
     let vault: MockVaultContract;
 
     beforeEach(() => {
