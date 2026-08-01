@@ -1,5 +1,7 @@
 # 🛡️ MidnightShield: Privacy-Preserving Liquidity Vault
 
+This project is built on the Midnight Network.
+
 ![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)
 ![Node Version](https://img.shields.io/badge/node->=22.0.0-green.svg)
 ![Network](https://img.shields.io/badge/network-Midnight_Preprod-purple.svg)
@@ -83,4 +85,4 @@ To fulfill the submission requirements, the following proofs of successful compi
 ![Compile Output](images/compile_success.png)
 
 ### 2. Contract Deployed (Address Shown)
-![Deploy Output](images/deploy_output.png)
+![Deploy Output](images/deploy_output.png)
